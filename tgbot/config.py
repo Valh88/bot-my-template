@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-
 from environs import Env
+from aiogram.fsm.storage.redis import RedisStorage, Redis
 
 
 @dataclass
@@ -55,3 +55,10 @@ def settings(path: str = None):
 config = settings()
 
 RATE_LIMIT: float = 2.0
+
+# docker run -d --name redis-stack-server -p 6379:6379 redis
+redis: Redis = Redis(
+    # host='cache',
+    # port=6379,
+    # password='eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81',
+)

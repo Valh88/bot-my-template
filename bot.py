@@ -12,12 +12,14 @@ from tgbot.middlewares.throttilng import ThrottlingMiddleware
 from tgbot.middlewares.I10n import TranslatorMD
 from tgbot.keyboards.main_menu import main_menu
 from tgbot.language.translator import Translator
+from tgbot.config import redis
 logger = logging.getLogger(__name__)
 
 
 def register_global_middleware(dp: Dispatcher, config: Config, session_pool):
     dp.message.outer_middleware(ConfigMiddleware(config))
     dp.callback_query.outer_middleware(ConfigMiddleware(config))
+    
     dp.message.outer_middleware(DbMiddleware(session_pool))
     dp.callback_query.outer_middleware(DbMiddleware(session_pool))
 
@@ -34,13 +36,11 @@ async def main():
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
     )
     logger.info("Starting bot")
-    # config = load_config(".env")
 
     bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
     await main_menu(bot)
 
     if config.tg_bot.use_redis:
-        redis: Redis = Redis(host='localhost')
         storage: RedisStorage = RedisStorage(redis=redis)
     else:
         storage: MemoryStorage = MemoryStorage()
