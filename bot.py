@@ -3,15 +3,15 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, Redis
-# from tgbot.config import load_config
 from tgbot.handlers import user, echo
 from tgbot.config import config, Config
 from tgbot.models.database import create_db_session
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.middlewares.database import DbMiddleware
 from tgbot.middlewares.throttilng import ThrottlingMiddleware
+from tgbot.middlewares.I10n import TranslatorMD
 from tgbot.keyboards.main_menu import main_menu
-
+from tgbot.language.translator import Translator
 logger = logging.getLogger(__name__)
 
 
@@ -22,6 +22,10 @@ def register_global_middleware(dp: Dispatcher, config: Config, session_pool):
     dp.callback_query.outer_middleware(DbMiddleware(session_pool))
 
     dp.message.middleware(ThrottlingMiddleware())
+    dp.callback_query.middleware(ThrottlingMiddleware())
+
+    dp.message.middleware(TranslatorMD())
+    dp.callback_query.middleware(TranslatorMD())
 
 
 async def main():
@@ -51,7 +55,10 @@ async def main():
     # start
     try:
         await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling(bot)
+        await dp.start_polling(
+            bot,
+            translator=Translator()
+            )
     finally:
         await dp.storage.close()
         # await dp.storage.wait_closed()

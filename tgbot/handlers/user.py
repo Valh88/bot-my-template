@@ -4,11 +4,17 @@ from aiogram.filters import CommandStart, Command, Text, StateFilter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from tgbot.models.user import User
+from tgbot.language.translator import LocalizedTranslator
+
 router = Router()
 
 
 @router.message(CommandStart())
-async def start_command(message: Message, session: AsyncSession):
+async def start_command(
+    message: Message, 
+    session: AsyncSession,
+    translator: LocalizedTranslator,
+    ):
     user = message.from_user
     to_db = select(User).where(User.telega_id == user.id)
     current_user = await session.scalar(to_db)
@@ -23,7 +29,7 @@ async def start_command(message: Message, session: AsyncSession):
         session.add(current_user), await session.commit()
 
     await message.answer(
-        text='3123',
+        text=translator.get(key='test'),
         # reply_markup=keyword
    )
 
