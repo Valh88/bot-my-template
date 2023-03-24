@@ -3,6 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, Redis
+from aiogram.client.session.aiohttp import AiohttpSession
 from tgbot.handlers import user, echo
 from tgbot.config import config, Config
 from tgbot.models.database import create_db_session
@@ -12,7 +13,8 @@ from tgbot.middlewares.throttilng import ThrottlingMiddleware
 from tgbot.middlewares.I10n import TranslatorMD
 from tgbot.keyboards.main_menu import main_menu
 from tgbot.language.translator import Translator
-from tgbot.config import redis
+# from tgbot.config import redis
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,11 +39,11 @@ async def main():
     )
     logger.info("Starting bot")
 
-    bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
+    bot = Bot(token=config.tg_bot.token, parse_mode='HTML',)
     await main_menu(bot)
-
+    
     if config.tg_bot.use_redis:
-        storage: RedisStorage = RedisStorage(redis=redis)
+        storage: RedisStorage = RedisStorage(redis=Redis())
     else:
         storage: MemoryStorage = MemoryStorage()
     dp: Dispatcher = Dispatcher(storage=storage)
@@ -57,7 +59,8 @@ async def main():
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(
             bot,
-            translator=Translator()
+            translator=Translator(),
+            cache=Redis(),
             )
     finally:
         await dp.storage.close()

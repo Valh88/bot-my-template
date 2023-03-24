@@ -15,6 +15,6 @@ class DbMiddleware(BaseMiddleware):
                        event: Message,
                        data: Dict[str, Any]) -> Any:
         async with self.session_pool() as session:
-            data['session'] = session
+            data['db'] = session
             result = await handler(event, data)
         return result
